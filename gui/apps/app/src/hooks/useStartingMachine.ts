@@ -1,6 +1,7 @@
 import { getDefaultStore, useAtom } from "jotai";
 import { cloudCanRunHarness } from "@/hooks/queries/cloudroom-queries";
 import { createSyncedPreferenceAtom } from "@/lib/ui-preferences/synced-preference-atom";
+import { resolveStartingExecutionTarget } from "./starting-machine-policy";
 
 export type StartingMachine = "cloud" | "last";
 
@@ -38,10 +39,11 @@ export function startingExecutionTarget(
   const lastUsed =
     (projectId ? localStorage.getItem(`${LAST_STARTED_KEY}:${projectId}`) : null) ??
     localStorage.getItem(LAST_STARTED_KEY);
-  const startInCloud =
-    newThread &&
-    (getDefaultStore().get(startingMachineAtom) !== "last" || lastUsed === null);
-  return startInCloud || lastUsed === "cloud" ? "cloud" : "local";
+  return resolveStartingExecutionTarget(
+    newThread,
+    getDefaultStore().get(startingMachineAtom),
+    lastUsed,
+  );
 }
 
 export function agentExecutionTarget(
