@@ -1,10 +1,12 @@
 # Veris: reuse the original Cloudroom harnesses
 
-This folder is the source-backed handoff for connecting an existing Veris/PVA installation to this Cloudroom fork. Keep Cloudroom's provider adapters, native authentication, model discovery, device access, and plugin system. Add Veris behavior through those extension points and the existing Veris runtime.
+This folder is the source-backed handoff for using original Cloudroom as the Veris app foundation. **First establish the original PC and phone application with the current setup. Then change the colors, layout, and Veris appearance, and add the requested features.** Keep Cloudroom's provider adapters, native authentication, model discovery, device access, and plugin system.
 
 **Source baseline:** `d8b3cc3a16bb4b06fc99d8e543d40f1087d1e815` from `davidondrej/cloudroom`, already present in this fork. The inventory describes that revision. It does not assert that a particular PC has installed or authenticated every harness.
 
-Start with [PC_SETUP.md](PC_SETUP.md). The machine-readable reference is [upstream-harnesses.json](upstream-harnesses.json). It is documentation data, **not an installer or a Cloudroom configuration file**. Do not import it into runtime settings.
+Start by capturing the running installation with [APP_INVENTORY.md](APP_INVENTORY.md), then follow [PC_SETUP.md](PC_SETUP.md). The machine-readable source reference is [upstream-harnesses.json](upstream-harnesses.json). It is documentation data, **not an installer or a Cloudroom configuration file**. Do not import it into runtime settings.
+
+For the first appearance experiment, review the optional [Veris Slate palette](../../gui/examples/themes/veris-slate/README.md). It uses the original custom-theme loader, supports light and dark modes, and includes activation, validation, and rollback steps. It is not automatically installed or selected by this branch.
 
 ## The 14 shipped GUI provider definitions
 
@@ -95,7 +97,9 @@ Core defaults to loopback port 9840. Its API requires `Authorization: Bearer CLO
 
 Commands carry stable `request_id` values. A `202` response means accepted and saved, not completed. Follow the receipt to its terminal state, preserve event sequence numbers for reconnects, and do not replay uncertain work under a new request ID. Core event payloads differ by harness. Its `sleep` command releases an idle harness process; it is not a general local-model GPU-unload command. See the complete [Core API reference](../../core/docs/api.md) and [TypeScript client](../../core/integrations/bb/client.ts).
 
-## Where the Veris additions belong
+## Where later Veris additions belong
+
+Establish the original application baseline first. Record these extension points during inventory, then use them when the baseline is verified and work moves to appearance and features.
 
 Keep the working Cloudroom QR/Connect access and machine enrollment. The Cloudroom PWA and a separately installed native Veris/Jarvis app may use different APIs; inspect the active app before attaching a bridge. Source: [Connect overview](../../gui/plugins/connect/PLUGIN_OVERVIEW.md) and [multiple-device guide](../../gui/docs/multiple-devices.md).
 

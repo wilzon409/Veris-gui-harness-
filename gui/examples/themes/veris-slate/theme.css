@@ -1,0 +1,55 @@
+/* Veris Slate: optional palette for Cloudroom's existing theme loader.
+ * Copy to <room-cli theme dir>/veris-slate/theme.css to make it available.
+ * Selecting it is a separate operation; see README.md before activation.
+ * Color tokens only: retain the original layout, typography, and controls.
+ */
+:root,
+.light {
+  --canvas: #f4f6fa;
+  --ink: #273447;
+  --primary: #6d28d9;
+  --primary-text: var(--primary);
+  --primary-foreground: #ffffff;
+  --muted-foreground: #46546a;
+  --subtle-foreground: #536179;
+  --readback-foreground: #4d5b70;
+  --timeline-accent: #256e8c;
+  --file-accent: var(--timeline-accent);
+  --skill-mention-foreground: var(--primary);
+  --destructive: #b42345;
+  --destructive-foreground: #ffffff;
+  --destructive-text: #b42345;
+  --warning: #bd6b12;
+  --warning-text: #8a4b08;
+  --attention: #b85e0b;
+  --success: #137747;
+  --success-foreground: #10653b;
+  --diff-added: #137747;
+  --diff-removed: #b42345;
+  --pr-merged: #713ab8;
+}
+
+.dark {
+  --canvas: #171d26;
+  --ink: #c5ced9;
+  --primary: #b9a2ff;
+  --primary-text: var(--primary);
+  --primary-foreground: #201330;
+  --muted-foreground: #a7b4c8;
+  --subtle-foreground: #93a2b8;
+  --readback-foreground: #9dadc1;
+  --timeline-accent: #a0bed7;
+  --file-accent: var(--timeline-accent);
+  --skill-mention-foreground: var(--primary);
+  --destructive: #be4563;
+  --destructive-foreground: #ffffff;
+  --destructive-text: #fb91a7;
+  --warning: #e5ae5b;
+  --warning-text: #e5ae5b;
+  --attention: #e5ae5b;
+  --success: #79cfa3;
+  --success-foreground: #79cfa3;
+  --diff-added: #79cfa3;
+  --diff-removed: #fb91a7;
+  --pr-merged: #c1a1f2;
+}

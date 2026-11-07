@@ -2,7 +2,9 @@
 
 ## Objective
 
-Read the original Cloudroom implementation and attach the existing Veris/PVA capabilities to it. This fork already contains the original harness adapters. The companion [source map](README.md) and [JSON inventory](upstream-harnesses.json) copy the integration details needed by the PC builder.
+**First establish the original Cloudroom PC and phone application with the existing setup. Then customize its colors, layout, and Veris appearance; integrate additional Veris/PVA capabilities in the later feature phase.** This fork already contains the original application and harness adapters. The companion [source map](README.md) and [JSON inventory](upstream-harnesses.json) copy the integration details needed by the PC builder.
+
+Start with [APP_INVENTORY.md](APP_INVENTORY.md) on the actual PC. Capture the running installation's versions, accounts, configuration references, providers, models, plugins, skills, projects, and phone route. Preserve the original behavior as the baseline for later changes.
 
 **Current evidence:** source inspection at `d8b3cc3a16bb4b06fc99d8e543d40f1087d1e815`. Live PC installation, account readiness, model access, and phone execution are not verified by these files. Keep using the existing private workspace's control documents and handoff; this public guide does not become another runtime authority.
 
@@ -63,9 +65,9 @@ Resolve local models through the active Veris/PVA runtime's established routing 
 
 For GUI extensions use the installed Cloudroom SDK. If a Rust Core service is actually present, discover its configured harnesses through authenticated `/v1/capabilities` and use its separate API contract. GUI `acp-*` IDs do not pass unchanged into the Core harness enum. See the mapping and request/receipt rules in [README.md](README.md).
 
-## 4. Attach Veris features through existing extension points
+## 4. Record the extension points for the later feature phase
 
-Map each requested Veris capability to its current owner and supported Cloudroom surface before changing code:
+After capturing the original application, map each requested Veris capability to its current owner and supported Cloudroom surface. These are later extension points, after baseline verification and the user's requested appearance work:
 
 | Existing capability | Integration approach |
 | --- | --- |
@@ -88,10 +90,37 @@ Keep upstream provider code reusable. A Veris plugin can add control/status, too
 5. Repeat on the second execution host only if it is already configured as a worker. Resolve any missing worker role explicitly.
 6. Send one voice request through the active app's existing speech-input path and confirm the task result. If that app already provides speech output, verify playback through the same path. Record dictation, spoken output, and any unavailable capability separately.
 
-After that, attach the next existing tool or skill and validate its real behavior. Use the active project's existing private handoff to record completed work, unresolved issues, and exact evidence. Do not mark the whole integration complete because the source inventory exists.
+Use the active project's existing private handoff to record the original app baseline, completed work, unresolved issues, and exact evidence. With that baseline verified, proceed to the requested colors, layout, and Veris appearance while preserving functionality, then add tools and skills incrementally. Do not mark the application setup complete because the source inventory exists.
+
+## 6. Try appearance changes in the original app
+
+Use the optional [Veris Slate palette](../../gui/examples/themes/veris-slate/README.md) for a first color-only experiment. Keep the original app and phone controls. Record the active theme before selecting another; theme selection is shared by clients on the same server, while light/dark mode is per client. Theme Preview selection also activates a palette, so use the development profile for initial review.
+
+For source development, the upstream [GUI build guide](../../gui/README.md) defines these commands from `gui`:
+
+```text
+pnpm install --frozen-lockfile
+pnpm exec turbo run build typecheck --filter=@cloudroom/app --filter=@cloudroom/server --filter=@cloudroom/desktop --concurrency=2
+```
+
+Then use two terminals, both in `gui`:
+
+```text
+pnpm dev
+```
+
+```text
+pnpm exec turbo run dev --filter=@cloudroom/desktop
+```
+
+The [development launcher](../../gui/apps/desktop/scripts/run-electron-dev.mjs) selects an isolated data directory and Electron user-data profile by default. Verify the printed server/profile paths; keep that isolation from the installed app. Do not force both processes to write the installed app's database/profile. Accounts and phone access must be checked in whichever profile is actually being tested.
+
+The build guide's prerequisite introduction is macOS-oriented. The [desktop package](../../gui/apps/desktop/package.json) declares Windows support and a `package:win` script. Check the installed Windows native-build prerequisites before building; these commands have not been run on the user's PC by this handoff. For an unpacked Windows build, use `pnpm --filter @cloudroom/desktop run package:win`. The generic `package`, `dist`, and `start` scripts select the macOS path in this snapshot.
+
+Keep source builds separate from replacing the installed app. A successful build alone does not verify current accounts, pairing, phone input, or a completed harness job.
 
 ## Upgrade and review
 
 The JSON inventory records source-file SHA-256 hashes. When upstream changes those files, reread the implementation and refresh the documentation. Model hints can change independently of accounts, so continue discovering models at runtime.
 
-Review changes on a branch, keep upstream licensing, and run the checks required by the files actually changed. These documentation/data additions do not install software, change pairing, modify runtime defaults, or confirm a live PC deployment.
+Review changes on a branch, keep upstream licensing, and run the checks required by the files actually changed. The handoff and optional theme source do not install software, change pairing, modify runtime defaults, or confirm a live PC deployment.
