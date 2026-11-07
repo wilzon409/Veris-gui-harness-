@@ -38,11 +38,12 @@ export function CloudroomSignInButton() {
   const checking = status.isPending;
   const account = status.data?.account;
   const signingIn = status.data?.signingIn === true;
-  const label = checking || account ? "Account" : signingIn ? "Cancel login" : "Set up Cloudroom";
-  const tooltip = account ? `Account (${account.email})${setupDone ? "" : " · Finish setup"}` : signingIn ? "Cancel login" : checking ? "Checking your account" : "Set up Cloudroom";
+  const label = checking || account ? "Cloudroom account" : signingIn ? "Cancel login" : "Optional cloud account";
+  const tooltip = account ? `Account (${account.email})${setupDone ? "" : " · Finish cloud setup"}` : signingIn ? "Cancel login" : checking ? "Checking optional cloud account" : "Local Veris works without a Cloudroom account";
   const button = <Button variant="ghost" className={cn(FOOTER_ICON_BUTTON_CLASS, "data-[state=open]:bg-state-active data-[state=open]:text-foreground")} aria-label={label} disabled={action.isPending || checking} onClick={account ? undefined : () => (signingIn ? action.mutate("cancel") : openSetup(true))}>
     {checking || signingIn || action.isPending ? <Icon name="Loading" className="animate-spin" aria-hidden /> : <Icon name="UserRound" aria-hidden />}
-    {!checking && !signingIn && (!account || !setupDone) && <span className={cn("absolute right-1.5 top-1.5 size-1.5 rounded-full", account ? "bg-primary" : "bg-destructive")} aria-hidden />}
+    {/* No account is a valid local setup, not an error requiring a red badge. */}
+    {!checking && !signingIn && account && !setupDone && <span className="absolute right-1.5 top-1.5 size-1.5 rounded-full bg-primary" aria-hidden />}
   </Button>;
   return <SidebarMenuItem data-footer-item="cloudroom-account">
     <Popover open={menuOpen} onOpenChange={setMenuOpen}>
