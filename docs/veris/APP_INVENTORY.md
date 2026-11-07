@@ -4,6 +4,8 @@
 
 Establish the original, currently installed desktop and phone baseline before any UI or theme changes. Run this task from the agent already connected to that desktop app. A GitHub branch appearing in the project menu does not establish which build is installed.
 
+This is the collection stage of the [direct implementation task](PC_SETUP.md#task-for-the-agent-already-running-inside-cloudroom). Its read-only limits apply during collection; afterward, continue that task through configuration reuse, repository edits, build/run, and desktop/phone verification.
+
 Use existing Cloudroom CLI, read-only RPCs, authenticated SDK/API access, and visible settings. Do not install, enroll machines, switch accounts, restart discovery, repair configuration, change themes, send prompts, or run capability tests during this inventory. Writing the private report and small RPC input files is allowed.
 
 Keep every result in the user's existing **private workspace**, outside this public repository. Use placeholders below only after resolving actual IDs locally. Do not publish account identities, machine names, screenshots, private URLs, project paths, or configuration values in this repository.

@@ -4,7 +4,7 @@ This folder is the source-backed handoff for using original Cloudroom as the Ver
 
 **Source baseline:** `d8b3cc3a16bb4b06fc99d8e543d40f1087d1e815` from `davidondrej/cloudroom`, already present in this fork. The inventory describes that revision. It does not assert that a particular PC has installed or authenticated every harness.
 
-Start by capturing the running installation with [APP_INVENTORY.md](APP_INVENTORY.md), then follow [PC_SETUP.md](PC_SETUP.md). The machine-readable source reference is [upstream-harnesses.json](upstream-harnesses.json). It is documentation data, **not an installer or a Cloudroom configuration file**. Do not import it into runtime settings.
+Give the agent already running inside Cloudroom the [direct implementation task in PC_SETUP.md](PC_SETUP.md#task-for-the-agent-already-running-inside-cloudroom). It collects the existing setup using [APP_INVENTORY.md](APP_INVENTORY.md), then continues to reuse that configuration, edit this repository, build/run the original fork, and verify desktop/phone behavior. The machine-readable source reference is [upstream-harnesses.json](upstream-harnesses.json). It is documentation data, **not an installer or a Cloudroom configuration file**. Do not import it into runtime settings.
 
 For the first appearance experiment, review the optional [Veris Slate palette](../../gui/examples/themes/veris-slate/README.md). It uses the original custom-theme loader, supports light and dark modes, and includes activation, validation, and rollback steps. It is not automatically installed or selected by this branch.
 

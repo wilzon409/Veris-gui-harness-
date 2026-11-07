@@ -8,6 +8,53 @@ Start with [APP_INVENTORY.md](APP_INVENTORY.md) on the actual PC. Capture the ru
 
 **Current evidence:** source inspection at `d8b3cc3a16bb4b06fc99d8e543d40f1087d1e815`. Live PC installation, account readiness, model access, and phone execution are not verified by these files. Keep using the existing private workspace's control documents and handoff; this public guide does not become another runtime authority.
 
+## Task for the agent already running inside Cloudroom
+
+Use that existing local agent to implement this task in the Veris GUI repository. Inventory is the short collection stage of the build, not its final deliverable. Continue through configuration reuse, necessary repository edits, build/run, and verification whenever local access permits.
+
+```text
+Work from the current Cloudroom application on this PC.
+Target repository: https://github.com/wilzon409/Veris-gui-harness-
+Handoff branch: codex/veris-upstream-harness-setup
+
+1. Open the existing local checkout of this repository. Read AGENTS.md,
+   record branch/HEAD/worktree status, and fetch the handoff branch while
+   preserving local changes. Use a separate worktree if needed.
+
+2. Read docs/veris/APP_INVENTORY.md and collect the current installed setup:
+   harness executables, accounts/readiness, models/API routing, plugins,
+   skills, project/instruction paths, appearance, and phone connection.
+   Keep actual private configuration and credential values out of Git.
+
+3. Use this original Cloudroom source as the Veris app base. Reuse the
+   installed harnesses, native authentication, local model endpoints,
+   plugin sources, and skill locations. Carry compatible settings into
+   the fork's local application configuration through its existing
+   interfaces. Copy user-owned extension files only when required;
+   preserve source ownership, licenses, and existing canonical paths.
+   Implement any necessary configuration or repository changes now.
+
+4. Build and launch the fork using the original GUI development workflow
+   below. Verify the actual process, build revision, data directory,
+   selected account/harness, and model. The repository appearing in the
+   project picker is not proof that its application build is running.
+
+5. Establish the same original app behavior on desktop and phone. Verify
+   which server/profile the phone opens and complete one read-only task
+   in the selected project with a retained result. Preserve the working
+   original connection while checking the fork's supported phone route.
+
+6. Once that baseline works, preview the optional Veris Slate palette in
+   the test profile and continue with reversible UI edits. Check existing
+   model/project selectors, threads, sidebar, and phone keyboard behavior.
+
+Return the running-build evidence, configuration reused, code changed,
+checks completed, and any exact unresolved blocker. Continue past the
+inventory report; do not describe an unrun build as installed or working.
+```
+
+“Carry the setup” means reuse the working native installations and copy compatible local configuration where necessary. Application data belongs to its private profile, not the source repository. Native CLI logins may already work under the same OS user; Cloudroom-managed account selection, history, and Connect state still need verification. If app-state migration is necessary, use a supported export/import or a consistent private backup into a separate profile. Do not point concurrent app processes at the same live database, or assume copied credentials preserve a distinct instance's device identity. The original [development launcher](../../gui/apps/desktop/scripts/run-electron-dev.mjs), [account store](../../gui/plugins/accounts/src/contract.ts), and [Connect implementation](../../gui/plugins/connect/PLUGIN_OVERVIEW.md) define these separate surfaces.
+
 ## 1. Locate the working setup
 
 Read the active project's `AGENTS.md` and established entry instructions. Identify the existing Cloudroom checkout/install, its version, running user, server connection, execution-machine IDs, project roots, phone client, and current QR/Connect route. Record working-tree status before making changes.
