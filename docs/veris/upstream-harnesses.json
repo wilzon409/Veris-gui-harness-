@@ -1,0 +1,633 @@
+{
+  "schemaVersion": 1,
+  "purpose": "Source inventory and PC handoff. Documentation data only; not executable runtime configuration.",
+  "upstreamRepository": "https://github.com/davidondrej/cloudroom",
+  "forkRepository": "https://github.com/wilzon409/Veris-gui-harness-",
+  "sourceCommit": "d8b3cc3a16bb4b06fc99d8e543d40f1087d1e815",
+  "reviewedDateUTC": "2026-11-07",
+  "runtimeVerification": {
+    "installation": "not_checked",
+    "authentication": "not_checked",
+    "modelAvailability": "not_checked",
+    "phoneToHostExecution": "not_checked"
+  },
+  "counts": {
+    "guiProviders": 14,
+    "nativeGuiProviders": 3,
+    "acpGuiProviders": 11,
+    "mappedCoreHarnesses": 10
+  },
+  "interpretation": {
+    "launchReferences": "Source default commands only. The original adapter owns extra arguments, permission modes, session state, environment handling, and lifecycle. Do not execute launch commands as inventory checks.",
+    "signInReferences": "Retain existing native authentication. These are upstream reference strings, not instructions to automatically sign in or install a daemon.",
+    "modelHints": "Copied upstream primary-model preferences are snapshot hints, not live availability or entitlement. Query the existing host provider catalog and verify an authorized task.",
+    "privateConfiguration": "Keep actual endpoint configuration, credentials, device identities, model inventory, and private project data in the existing private workspace.",
+    "coreMapping": "Core mappings are supported source aliases, not evidence of a configured running Core harness. GUI and Core transports differ."
+  },
+  "providers": [
+    {
+      "id": "codex",
+      "displayName": "Codex",
+      "pluginPackage": "bb-plugin-provider-codex",
+      "integration": "native_app_server",
+      "launchReference": {
+        "command": "codex",
+        "args": [
+          "app-server"
+        ]
+      },
+      "executableOverrideEnvironment": [
+        "BB_CODEX_BRIDGE_APP_SERVER_COMMAND",
+        "BB_CODEX_BRIDGE_APP_SERVER_ARGS"
+      ],
+      "overrideNotes": "ARGS is a JSON string array. Setting the command override selects the supplied argument list, or an empty list, instead of the default app-server argument.",
+      "signInCommandReference": "codex login",
+      "modelDiscovery": {
+        "method": "model/list",
+        "transport": "Codex app-server native RPC",
+        "upstreamPrimaryModelHints": []
+      },
+      "sourceFiles": [
+        "gui/plugins/provider-codex/server.ts",
+        "gui/plugins/provider-codex/src/bridge/bridge.ts",
+        "gui/plugins/provider-codex/src/models.ts",
+        "gui/plugins/provider-codex/src/native-roots.ts",
+        "gui/plugins/provider-codex/PLUGIN_OVERVIEW.md"
+      ],
+      "optionalCoreHarnessId": "codex"
+    },
+    {
+      "id": "claude-code",
+      "displayName": "Claude Code",
+      "pluginPackage": "bb-plugin-provider-claude-code",
+      "integration": "native_claude_agent_sdk",
+      "launchReference": {
+        "entryPoint": "@anthropic-ai/claude-agent-sdk query()",
+        "nativeExecutable": "claude"
+      },
+      "executableOverrideEnvironment": [
+        "BB_CLAUDE_CODE_EXECUTABLE"
+      ],
+      "signInCommandReference": "claude",
+      "modelDiscovery": {
+        "method": "initializationResult().models",
+        "transport": "Claude Agent SDK",
+        "postprocessing": "Upstream catalog and native effort settings",
+        "settingsPathReferences": [
+          "$CLAUDE_CONFIG_DIR/settings.json",
+          "~/.claude/settings.json (default)"
+        ],
+        "upstreamPrimaryModelHints": []
+      },
+      "sourceFiles": [
+        "gui/plugins/provider-claude-code/server.ts",
+        "gui/plugins/provider-claude-code/src/bridge/model-list.ts",
+        "gui/plugins/provider-claude-code/src/model-list.ts",
+        "gui/plugins/provider-claude-code/src/bridge/sdk-session.ts",
+        "gui/plugins/provider-claude-code/src/native-roots.ts",
+        "gui/plugins/provider-claude-code/PLUGIN_OVERVIEW.md"
+      ],
+      "optionalCoreHarnessId": "claude-code"
+    },
+    {
+      "id": "pi",
+      "displayName": "Pi",
+      "pluginPackage": "bb-plugin-provider-pi",
+      "integration": "native_pi_rpc",
+      "launchReference": {
+        "command": "pi",
+        "args": [
+          "--mode",
+          "rpc"
+        ],
+        "notes": "The original adapter also supplies its extension and session arguments. Catalog probing uses --no-session."
+      },
+      "executableOverrideEnvironment": [
+        "BB_PI_BRIDGE_COMMAND",
+        "BB_PI_BRIDGE_ARGS"
+      ],
+      "overrideNotes": "ARGS is a JSON string array used with a command override. The original adapter supplies RPC/extension/session arguments.",
+      "signInCommandReference": "pi",
+      "signInNotes": "Start Pi, type /login, and pick the existing intended provider when login is required.",
+      "modelDiscovery": {
+        "method": "get_available_models",
+        "transport": "Pi native RPC",
+        "preserveReturnedFields": [
+          "routeProviderId"
+        ],
+        "settingsPathReferences": [
+          "$PI_CODING_AGENT_DIR/models.json",
+          "~/.pi/agent/models.json (default)"
+        ],
+        "upstreamPrimaryModelHints": []
+      },
+      "sourceFiles": [
+        "gui/plugins/provider-pi/src/declaration.ts",
+        "gui/plugins/provider-pi/src/bridge/catalog.ts",
+        "gui/plugins/provider-pi/src/bridge/rpc-child.ts",
+        "gui/plugins/provider-pi/src/native-roots.ts",
+        "gui/plugins/provider-pi/PLUGIN_OVERVIEW.md",
+        "gui/plugins/provider-pi/src/model-list.ts"
+      ],
+      "optionalCoreHarnessId": "pi"
+    },
+    {
+      "id": "acp-cursor",
+      "displayName": "Cursor",
+      "pluginPackage": "bb-plugin-provider-acp",
+      "integration": "acp",
+      "visibility": "always",
+      "declaredDialect": "cursor",
+      "launchReference": {
+        "command": "cursor-agent",
+        "args": [
+          "acp"
+        ],
+        "env": {}
+      },
+      "signInCommandReference": "cursor-agent login",
+      "signInMayInstallDaemon": false,
+      "modelDiscovery": {
+        "method": "Upstream ACP model/capability discovery",
+        "upstreamPrimaryModelHints": [
+          "default",
+          "grok-4.6",
+          "gpt-5.6-sol",
+          "claude-opus-5-5",
+          "claude-fable-5",
+          "composer-2.5"
+        ],
+        "cliListReference": {
+          "command": "cursor-agent",
+          "args": [
+            "--list-models"
+          ]
+        }
+      },
+      "nativeRootsResolverReference": "resolveCursorNativeRoots",
+      "sourceFiles": [
+        "gui/plugins/provider-acp/src/known-agents.ts",
+        "gui/plugins/provider-acp/src/agents.ts",
+        "gui/packages/provider-bridge-acp/src/bridge/model-catalog.ts"
+      ],
+      "optionalCoreHarnessId": "cursor"
+    },
+    {
+      "id": "acp-opencode",
+      "displayName": "opencode",
+      "pluginPackage": "bb-plugin-provider-acp",
+      "integration": "acp",
+      "visibility": "installed",
+      "declaredDialect": "opencode",
+      "launchReference": {
+        "command": "opencode",
+        "args": [
+          "acp"
+        ],
+        "env": {}
+      },
+      "signInCommandReference": "opencode auth login",
+      "signInMayInstallDaemon": false,
+      "modelDiscovery": {
+        "method": "Upstream ACP model/capability discovery",
+        "upstreamPrimaryModelHints": []
+      },
+      "nativeRootsResolverReference": "resolveOpenCodeNativeRoots",
+      "sourceFiles": [
+        "gui/plugins/provider-acp/src/known-agents.ts",
+        "gui/plugins/provider-acp/src/agents.ts",
+        "gui/packages/provider-bridge-acp/src/bridge/model-catalog.ts"
+      ],
+      "optionalCoreHarnessId": "opencode"
+    },
+    {
+      "id": "acp-omp",
+      "displayName": "omp",
+      "pluginPackage": "bb-plugin-provider-acp",
+      "integration": "acp",
+      "visibility": "installed",
+      "declaredDialect": null,
+      "launchReference": {
+        "command": "omp",
+        "args": [
+          "acp"
+        ],
+        "env": {
+          "OMP_MCP_TIMEOUT_MS": "900000"
+        }
+      },
+      "signInCommandReference": "omp login",
+      "signInMayInstallDaemon": false,
+      "modelDiscovery": {
+        "method": "Upstream ACP model/capability discovery",
+        "upstreamPrimaryModelHints": []
+      },
+      "nativeRootsResolverReference": "resolveOmpNativeRoots",
+      "sourceFiles": [
+        "gui/plugins/provider-acp/src/known-agents.ts",
+        "gui/plugins/provider-acp/src/agents.ts",
+        "gui/packages/provider-bridge-acp/src/bridge/model-catalog.ts"
+      ],
+      "optionalCoreHarnessId": null
+    },
+    {
+      "id": "acp-grok",
+      "displayName": "Grok Build",
+      "pluginPackage": "bb-plugin-provider-acp",
+      "integration": "acp",
+      "visibility": "installed",
+      "declaredDialect": "grok",
+      "launchReference": {
+        "command": "grok",
+        "args": [
+          "agent",
+          "stdio"
+        ],
+        "env": {}
+      },
+      "signInCommandReference": "grok login",
+      "signInMayInstallDaemon": false,
+      "modelDiscovery": {
+        "method": "Upstream ACP model/capability discovery",
+        "upstreamPrimaryModelHints": [
+          "grok-4.5",
+          "grok-composer-2.5-fast"
+        ],
+        "cliListReference": {
+          "command": "grok",
+          "args": [
+            "models"
+          ]
+        },
+        "selectionFlagReference": "--model"
+      },
+      "nativeRootsResolverReference": "resolveGrokNativeRoots",
+      "sourceFiles": [
+        "gui/plugins/provider-acp/src/known-agents.ts",
+        "gui/plugins/provider-acp/src/agents.ts",
+        "gui/packages/provider-bridge-acp/src/bridge/model-catalog.ts"
+      ],
+      "optionalCoreHarnessId": null
+    },
+    {
+      "id": "acp-fx",
+      "displayName": "fx",
+      "pluginPackage": "bb-plugin-provider-acp",
+      "integration": "acp",
+      "visibility": "installed",
+      "declaredDialect": "fx",
+      "launchReference": {
+        "command": "fx",
+        "args": [
+          "acp"
+        ],
+        "env": {}
+      },
+      "signInCommandReference": "fx login",
+      "signInMayInstallDaemon": false,
+      "modelDiscovery": {
+        "method": "Upstream ACP model/capability discovery",
+        "upstreamPrimaryModelHints": [
+          "anthropic/claude-opus-5.5",
+          "anthropic/claude-sonnet-5",
+          "openai/gpt-6-sol",
+          "spacexai/grok-4.7"
+        ]
+      },
+      "nativeRootsResolverReference": null,
+      "sourceFiles": [
+        "gui/plugins/provider-acp/src/known-agents.ts",
+        "gui/plugins/provider-acp/src/agents.ts",
+        "gui/packages/provider-bridge-acp/src/bridge/model-catalog.ts"
+      ],
+      "optionalCoreHarnessId": "fx"
+    },
+    {
+      "id": "acp-hermes-agent",
+      "displayName": "Hermes Agent",
+      "pluginPackage": "bb-plugin-provider-acp",
+      "integration": "acp",
+      "visibility": "installed",
+      "declaredDialect": null,
+      "launchReference": {
+        "command": "hermes",
+        "args": [
+          "acp"
+        ],
+        "env": {}
+      },
+      "signInCommandReference": "hermes login",
+      "signInMayInstallDaemon": false,
+      "modelDiscovery": {
+        "method": "Upstream ACP model/capability discovery",
+        "upstreamPrimaryModelHints": []
+      },
+      "nativeRootsResolverReference": "resolveHermesNativeRoots",
+      "sourceFiles": [
+        "gui/plugins/provider-acp/src/known-agents.ts",
+        "gui/plugins/provider-acp/src/agents.ts",
+        "gui/packages/provider-bridge-acp/src/bridge/model-catalog.ts"
+      ],
+      "optionalCoreHarnessId": "hermes"
+    },
+    {
+      "id": "acp-openclaw",
+      "displayName": "OpenClaw",
+      "pluginPackage": "bb-plugin-provider-acp",
+      "integration": "acp",
+      "visibility": "installed",
+      "declaredDialect": "openclaw",
+      "launchReference": {
+        "command": "openclaw",
+        "args": [
+          "acp",
+          "--no-prefix-cwd"
+        ],
+        "env": {
+          "OPENCLAW_HIDE_BANNER": "1",
+          "OPENCLAW_SUPPRESS_NOTES": "1"
+        }
+      },
+      "signInCommandReference": "openclaw onboard --install-daemon",
+      "signInMayInstallDaemon": true,
+      "modelDiscovery": {
+        "method": "Upstream ACP model/capability discovery",
+        "upstreamPrimaryModelHints": [],
+        "cliListReference": {
+          "command": "openclaw",
+          "args": [
+            "models",
+            "list",
+            "--plain"
+          ]
+        }
+      },
+      "nativeRootsResolverReference": null,
+      "sourceFiles": [
+        "gui/plugins/provider-acp/src/known-agents.ts",
+        "gui/plugins/provider-acp/src/agents.ts",
+        "gui/packages/provider-bridge-acp/src/bridge/model-catalog.ts"
+      ],
+      "optionalCoreHarnessId": "openclaw"
+    },
+    {
+      "id": "acp-devin",
+      "displayName": "Devin",
+      "pluginPackage": "bb-plugin-provider-acp",
+      "integration": "acp",
+      "visibility": "installed",
+      "declaredDialect": null,
+      "launchReference": {
+        "command": "devin",
+        "args": [
+          "acp"
+        ],
+        "env": {}
+      },
+      "signInCommandReference": "devin auth login",
+      "signInMayInstallDaemon": false,
+      "modelDiscovery": {
+        "method": "Upstream ACP model/capability discovery",
+        "upstreamPrimaryModelHints": []
+      },
+      "nativeRootsResolverReference": null,
+      "sourceFiles": [
+        "gui/plugins/provider-acp/src/known-agents.ts",
+        "gui/plugins/provider-acp/src/agents.ts",
+        "gui/packages/provider-bridge-acp/src/bridge/model-catalog.ts"
+      ],
+      "optionalCoreHarnessId": "devin"
+    },
+    {
+      "id": "acp-droid",
+      "displayName": "Droid",
+      "pluginPackage": "bb-plugin-provider-acp",
+      "integration": "acp",
+      "visibility": "installed",
+      "declaredDialect": null,
+      "launchReference": {
+        "command": "droid",
+        "args": [
+          "exec",
+          "--output-format",
+          "acp"
+        ],
+        "env": {}
+      },
+      "signInCommandReference": "droid",
+      "signInMayInstallDaemon": false,
+      "modelDiscovery": {
+        "method": "Upstream ACP model/capability discovery",
+        "upstreamPrimaryModelHints": [
+          "claude-opus-5-5",
+          "gpt-6.1-sol",
+          "claude-fable-5.1",
+          "kimi-k3",
+          "auto"
+        ]
+      },
+      "nativeRootsResolverReference": null,
+      "sourceFiles": [
+        "gui/plugins/provider-acp/src/known-agents.ts",
+        "gui/plugins/provider-acp/src/agents.ts",
+        "gui/packages/provider-bridge-acp/src/bridge/model-catalog.ts"
+      ],
+      "optionalCoreHarnessId": "droid"
+    },
+    {
+      "id": "acp-kilo",
+      "displayName": "Kilo Code",
+      "pluginPackage": "bb-plugin-provider-acp",
+      "integration": "acp",
+      "visibility": "installed",
+      "declaredDialect": "opencode",
+      "launchReference": {
+        "command": "kilo",
+        "args": [
+          "acp"
+        ],
+        "env": {}
+      },
+      "signInCommandReference": "kilo auth login",
+      "signInMayInstallDaemon": false,
+      "modelDiscovery": {
+        "method": "Upstream ACP model/capability discovery",
+        "upstreamPrimaryModelHints": [
+          "kilo/kilo-auto/free",
+          "kilo/kilo-auto/frontier",
+          "kilo/kilo-auto/balanced",
+          "kilo/kilo-auto/efficient"
+        ]
+      },
+      "nativeRootsResolverReference": null,
+      "sourceFiles": [
+        "gui/plugins/provider-acp/src/known-agents.ts",
+        "gui/plugins/provider-acp/src/agents.ts",
+        "gui/packages/provider-bridge-acp/src/bridge/model-catalog.ts"
+      ],
+      "optionalCoreHarnessId": null
+    },
+    {
+      "id": "acp-cline",
+      "displayName": "Cline",
+      "pluginPackage": "bb-plugin-provider-acp",
+      "integration": "acp",
+      "visibility": "installed",
+      "declaredDialect": null,
+      "launchReference": {
+        "command": "cline",
+        "args": [
+          "--acp"
+        ],
+        "env": {}
+      },
+      "signInCommandReference": "cline auth",
+      "signInMayInstallDaemon": false,
+      "modelDiscovery": {
+        "method": "Upstream ACP model/capability discovery",
+        "upstreamPrimaryModelHints": []
+      },
+      "nativeRootsResolverReference": null,
+      "sourceFiles": [
+        "gui/plugins/provider-acp/src/known-agents.ts",
+        "gui/plugins/provider-acp/src/agents.ts",
+        "gui/packages/provider-bridge-acp/src/bridge/model-catalog.ts"
+      ],
+      "optionalCoreHarnessId": null
+    }
+  ],
+  "discoveryCommandTemplates": [
+    "room-cli machine list --json",
+    "room-cli plugin list --json",
+    "room-cli connect status --json",
+    "room-cli provider list --machine <existing-machine-id-or-name> --json",
+    "room-cli provider list --installable --machine <existing-machine-id-or-name> --json",
+    "room-cli provider models <provider-id> --machine <existing-machine-id-or-name> --json"
+  ],
+  "sourceFiles": [
+    {
+      "path": "core/docs/api.md",
+      "sha256": "77fbf058c02d62e33f5422a9d160a4cfcd0a3a84755b20f391f02549d80ec954"
+    },
+    {
+      "path": "core/integrations/bb/client.ts",
+      "sha256": "e8a74667fb1dcadebc3cc5112a4719fd6bbcbdaf1ba9b29ec8ae7c2b0dc8f225"
+    },
+    {
+      "path": "core/src/runtime/mod.rs",
+      "sha256": "b77905589c9b9d751f0c72578f86db62cbceae49389494a6450e09f93ad080c5"
+    },
+    {
+      "path": "gui/apps/cli/src/commands/machine.ts",
+      "sha256": "92d991e0242642ba0d353eb8f32e011bff500ffd94f63e3348d0d3f0c368f67d"
+    },
+    {
+      "path": "gui/apps/cli/src/commands/plugin.ts",
+      "sha256": "41a3d5642739a6e305be3a42cb8600b58b1e0973319f639da7d0be2296336882"
+    },
+    {
+      "path": "gui/apps/cli/src/commands/provider.ts",
+      "sha256": "e835bb7b4cbb94621287c21b10239cf83d27fa93b1aa348a112aa84b252bf213"
+    },
+    {
+      "path": "gui/apps/server/src/services/cloudroom/events.ts",
+      "sha256": "bf13ac450b67f505c87e6817bb2e199975170ac6d2f1c12f07a2b8299e6f79a3"
+    },
+    {
+      "path": "gui/docs/configuration.md",
+      "sha256": "7348daaea65ac9743dcf6f3d9116df9830ae61d49299caeb8fe3153af4711b42"
+    },
+    {
+      "path": "gui/packages/provider-bridge-acp/src/bridge/model-catalog.ts",
+      "sha256": "b1160ad33e32a7ff10783c621de78636c2711cb99e6ab3de28fd682393574ed9"
+    },
+    {
+      "path": "gui/packages/server-contract/src/index.ts",
+      "sha256": "ca487bd65879b090b9520f37d34ac3f7df9556f9eefd6529ab610fe2537d45c8"
+    },
+    {
+      "path": "gui/plugins/connect/src/cli.ts",
+      "sha256": "1a881288078397f1b1b079649262a330e22676a5125c5816e31f36364bdf95e7"
+    },
+    {
+      "path": "gui/plugins/provider-acp/server.ts",
+      "sha256": "bb48a44081edf7d0d10633c2dff50b6000ccb605448dd8fe72bdbe149e147b5f"
+    },
+    {
+      "path": "gui/plugins/provider-acp/src/agents.ts",
+      "sha256": "cbc01e814c031000157aadd3425eab956885e1b43467933e1ca13edbaf387905"
+    },
+    {
+      "path": "gui/plugins/provider-acp/src/known-agents.ts",
+      "sha256": "e7379a85db9a45b0eb95495e97ea8f046b81e37d8d37f8c53110925705a7a31a"
+    },
+    {
+      "path": "gui/plugins/provider-claude-code/PLUGIN_OVERVIEW.md",
+      "sha256": "8c5fa01f9d4e38a918d5482ed6586501a543dcdbc7cea9417820e14dd9072c9f"
+    },
+    {
+      "path": "gui/plugins/provider-claude-code/server.ts",
+      "sha256": "bec4620ba6d3ce575696b1838373736783569773988419e6809f30da13a4579b"
+    },
+    {
+      "path": "gui/plugins/provider-claude-code/src/bridge/model-list.ts",
+      "sha256": "02dd843adc4693fbd119a78bd5c03133a0dd8d9aaa8571255e3b6fcaff3f3de7"
+    },
+    {
+      "path": "gui/plugins/provider-claude-code/src/bridge/sdk-session.ts",
+      "sha256": "71d813e838bd9f4062809b1ff17e390e78fbe2e79ef154c721400df78008179b"
+    },
+    {
+      "path": "gui/plugins/provider-claude-code/src/model-list.ts",
+      "sha256": "763420edb2646fe05f6b11e6806e68a6f2bfb935011953850d4e799d78b1cea9"
+    },
+    {
+      "path": "gui/plugins/provider-claude-code/src/native-roots.ts",
+      "sha256": "2e6b89ea3a0197ef9f637355c9f67ff6159d6d904cbf560c422958b9dfcbfe74"
+    },
+    {
+      "path": "gui/plugins/provider-codex/PLUGIN_OVERVIEW.md",
+      "sha256": "424fbee3e8a4dddfd73dd740ea17e2fc8ad05811d94860683667e65ad9970301"
+    },
+    {
+      "path": "gui/plugins/provider-codex/server.ts",
+      "sha256": "391602dcdc857caffbabf1ad885a7c2a396aa20c347817755aff1c01d4ea69ff"
+    },
+    {
+      "path": "gui/plugins/provider-codex/src/bridge/bridge.ts",
+      "sha256": "547852c98bb3787e8982952cda5040d3615d75b2bb1583c65b545ffafeca7ea4"
+    },
+    {
+      "path": "gui/plugins/provider-codex/src/models.ts",
+      "sha256": "a604d08f04ab3b1b4fa88b53d2f9a8dfb9750b19488ec09d5a25063968a2dedb"
+    },
+    {
+      "path": "gui/plugins/provider-codex/src/native-roots.ts",
+      "sha256": "0048a4d56855528732ce07e5528f79a75aba61eeab7f4aba4021423f5476b16f"
+    },
+    {
+      "path": "gui/plugins/provider-pi/PLUGIN_OVERVIEW.md",
+      "sha256": "430b1731c552240dfcb3a04c16e9a958196045634a3acf5a65ea4a9087f426d7"
+    },
+    {
+      "path": "gui/plugins/provider-pi/src/bridge/catalog.ts",
+      "sha256": "a3551ed925efc7906c422269174a7132fbc7a8fa7a24738e33846f6d20e25562"
+    },
+    {
+      "path": "gui/plugins/provider-pi/src/bridge/rpc-child.ts",
+      "sha256": "85ea1c5c08ad0e2d860a0235b75392ba1ee7904ed10d874e56db4154419526b6"
+    },
+    {
+      "path": "gui/plugins/provider-pi/src/declaration.ts",
+      "sha256": "7a6aed75f899066bcf1a1f91c78ddc22f3b1c5278cb12ecb3e33923417633ef2"
+    },
+    {
+      "path": "gui/plugins/provider-pi/src/model-list.ts",
+      "sha256": "57c0c47ff4da71511533e6e1fee0b3b81c463326f54af8f0d9fb7abdb3cef861"
+    },
+    {
+      "path": "gui/plugins/provider-pi/src/native-roots.ts",
+      "sha256": "2838d8575650af52c58fffbb4924173e278c691943f5581989bc3a36388b7ddd"
+    }
+  ]
+}
