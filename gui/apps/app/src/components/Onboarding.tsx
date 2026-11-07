@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from "react";
-import { atom, useAtom, useAtomValue, useSetAtom } from "jotai";
-import { atomWithStorage } from "jotai/utils";
+import { atom, useAtom, useSetAtom } from "jotai";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import { deriveProjectNameFromPath } from "@cloudroom/domain";
@@ -15,14 +14,12 @@ import { appToast } from "@/components/ui/app-toast";
 import { useCreateProject } from "@/hooks/mutations/project-mutations";
 import { useUpdateGeneralSettings } from "@/hooks/mutations/settings-mutations";
 import { cloudCanRunHarness, useCloudroomAccount, useCloudroomSignIn, useImportBb, useMacAgents, useNativeSessions, useProjectSuggestions, useSetCopyLogins, useSetMacAccess } from "@/hooks/queries/cloudroom-queries";
-import { useSidebarNavigation } from "@/hooks/queries/sidebar-navigation-query";
 import { useHostDaemon, useThisComputer } from "@/hooks/useHostDaemon";
 import { GitForWindowsBanner } from "@/components/layout/DesktopUpdateBanner";
 import { usePathPickerHost } from "@/hooks/useLocalPathPicker";
 import { useQuickCreateProjectController } from "@/hooks/useQuickCreateProject";
 import { usePromptBoxProviderPreference } from "@/hooks/thread-creation-options/persisted-selection-fields";
-import { booleanLocalStorage } from "@/lib/browser-storage";
-import { getBbDesktopInfo, MACOS_APP_REGION_NO_DRAG_CLASS, MACOS_WINDOW_DRAG_CLASS } from "@/lib/bb-desktop";
+import { MACOS_APP_REGION_NO_DRAG_CLASS, MACOS_WINDOW_DRAG_CLASS } from "@/lib/bb-desktop";
 import { copyTextToClipboard, copyToClipboardWithToast } from "@/lib/clipboard";
 import { fetchWithAppSurface } from "@/lib/app-surface";
 import { useSystemConfig, useSystemProviders } from "@/hooks/queries/system-queries";
@@ -32,10 +29,9 @@ import { useSetRootComposeProjectId } from "@/lib/root-compose-selection";
 import { sdk } from "@/lib/sdk";
 import { openUrlInExternalBrowser } from "@/lib/url-open-routing";
 
-const dismissedAtom = atomWithStorage("cloudroom.setup.dismissed", false, booleanLocalStorage, { getOnInit: true });
+// Hosted setup is optional. Local Veris must not depend on account readiness,
+// browser storage, project count, or a successful response from Cloudroom.
 const openAtom = atom(false);
-// A new install's sign-in page opens by itself (David, 2026-11-03, docs/scopes/onboarding.md). 20% keep the button, to measure it.
-const signInGroupAtom = atomWithStorage<"auto" | "manual" | "auto_done" | null>("cloudroom.setup.signInGroup", null, undefined, { getOnInit: true });
 export const useOpenSetup = () => useSetAtom(openAtom);
 
 const STEPS = ["Sign in", "Connect an agent", "Connect GitHub", "Import your work"];
@@ -85,21 +81,14 @@ export function useSetupProgress() {
 }
 
 export function Onboarding() {
-  const [dismissed, setDismissed] = useAtom(dismissedAtom);
   const [open, setOpen] = useAtom(openAtom);
-  const projects = useSidebarNavigation().data?.projects;
-  const account = useCloudroomAccount();
-  const locked = account.isSuccess && !account.data.account && !account.data.selfHosted;
-  // Only the desktop app opens setup by itself: "skipped" is saved per browser, so phones and other browsers would see it again.
-  const firstRun = !dismissed && getBbDesktopInfo() !== null && projects !== undefined && projects.length === 0;
-  // Stay open once shown: adding a folder or importing chats creates projects, which would otherwise end the first run mid-step.
-  useEffect(() => { if (firstRun) setOpen(true); }, [firstRun, setOpen]);
-  const visible = locked || open || firstRun;
-  if (!visible) return null;
-  return <Setup locked={locked} fresh={projects?.length === 0} close={() => { setDismissed(true); setOpen(false); }} />;
+  // Only an explicit setup action opens the hosted-account wizard. In
+  // particular, being signed out or offline never locks the local workspace.
+  if (!open) return null;
+  return <Setup close={() => setOpen(false)} />;
 }
 
-function Setup({ locked, fresh, close }: { locked: boolean; fresh: boolean; close: () => void }) {
+function Setup({ close }: { close: () => void }) {
   const progress = useSetupProgress();
   const { done, account } = progress;
   const [choices, setChoices] = useState({ macAccess: true, copyLogins: true });
@@ -150,23 +139,20 @@ function Setup({ locked, fresh, close }: { locked: boolean; fresh: boolean; clos
     return () => clearTimeout(timer);
   }, [countdown]);
   const viewed = useRef(new Set<number>());
-  const signInGroup = useAtomValue(signInGroupAtom);
   useEffect(() => {
     if (progress.checking || viewed.current.has(step)) return;
-    const group = step === 0 && signInGroup ? (signInGroup === "manual" ? "manual" : "auto") : null;
-    const timer = setTimeout(() => { viewed.current.add(step); track(STEP_IDS[step] ?? "project", "viewed", group); }, 1500);
+    const timer = setTimeout(() => { viewed.current.add(step); track(STEP_IDS[step] ?? "project", "viewed", step === 0 ? "manual" : null); }, 1500);
     return () => clearTimeout(timer);
-  }, [progress.checking, step, signInGroup]);
+  }, [progress.checking, step]);
   const knownSignedIn = useRef<boolean | null>(null);
   useEffect(() => {
     if (progress.checking) return;
     if (knownSignedIn.current === false && signedIn) track("account", "done");
     knownSignedIn.current = signedIn;
   }, [progress.checking, signedIn]);
-  if (progress.checking) return null;
 
   return (
-    <div role="dialog" aria-modal="true" aria-label="Set up Cloudroom" style={PALETTE} className="fixed inset-0 z-50 flex flex-col bg-(--ob-bg) text-(--ob-ink) duration-300 animate-in fade-in-0">
+    <div role="dialog" aria-modal="true" aria-label="Optional Cloudroom setup" style={PALETTE} className="fixed inset-0 z-50 flex flex-col bg-(--ob-bg) text-(--ob-ink) duration-300 animate-in fade-in-0">
       <div className={cn("h-10 shrink-0 border-b border-(--ob-line) bg-(--ob-rail)", MACOS_WINDOW_DRAG_CLASS)} />
       <GitForWindowsBanner pinned={false} />
       <div className="flex min-h-0 flex-1">
@@ -175,7 +161,7 @@ function Setup({ locked, fresh, close }: { locked: boolean; fresh: boolean; clos
             <BbLogo className="size-7" />
             cloudroom
           </div>
-          <p className="mt-10 mb-3 ml-3 text-[11px] tracking-[0.14em] text-(--ob-muted) uppercase">Setup</p>
+          <p className="mt-10 mb-3 ml-3 text-[11px] tracking-[0.14em] text-(--ob-muted) uppercase">Optional cloud setup</p>
           <ol className="flex flex-col gap-2">
             {STEPS.map((title, index) => {
               const state = index === step ? "now" : index < 3 && done[index] ? "done" : "todo";
@@ -217,16 +203,14 @@ function Setup({ locked, fresh, close }: { locked: boolean; fresh: boolean; clos
           <p className="mt-auto px-3 text-[12.5px] text-(--ob-muted)">Reopen setup anytime from the account button in the sidebar.</p>
         </aside>
         <main className="relative flex min-w-0 flex-1 overflow-y-auto px-6 pt-16 pb-8 md:px-[110px] md:py-10">
-          {!locked && (
-            <button type="button" onClick={() => { track(STEP_IDS[step] ?? "project", "closed"); leave(); }} className={cn("absolute top-5 right-6 flex items-center gap-1.5 text-[13px] text-(--ob-muted) hover:text-(--ob-ink)", MACOS_APP_REGION_NO_DRAG_CLASS)}>
-              Skip setup
-              <Icon name="X" className="size-3" aria-hidden />
-            </button>
-          )}
+          <button type="button" onClick={close} className={cn("absolute top-5 right-6 flex items-center gap-1.5 text-[13px] text-(--ob-muted) hover:text-(--ob-ink)", MACOS_APP_REGION_NO_DRAG_CLASS)}>
+            Back to local Veris
+            <Icon name="X" className="size-3" aria-hidden />
+          </button>
           <div key={step} className={cn("my-auto w-full duration-300 animate-in fade-in-0 slide-in-from-bottom-1", step === 3 ? "max-w-[860px]" : "max-w-[600px]")}>
             {step === 1 && stamped ? <TickStamp key={`${claude}-${codex}`} /> : <BbLogo className="mb-6 size-[72px] -rotate-[5deg]" />}
             <p className="font-serif text-base text-(--ob-muted) italic">Step {step + 1} of 4</p>
-            {step === 0 && <AccountStep email={account.data?.account?.email ?? null} signingIn={account.data?.signingIn === true} next={next} fresh={fresh} />}
+            {step === 0 && <AccountStep email={account.data?.account?.email ?? null} signingIn={account.data?.signingIn === true} next={next} close={close} />}
             {step === 1 && <AgentStep progress={progress} next={next} stamped={stamped} left={countdown?.left ?? null} choices={choices} setChoices={setChoices} />}
             {step === 2 && <GithubStep progress={progress} next={next} />}
             {step === 3 && <ProjectStep close={leave} added={added} setAdded={setAdded} imported={imported} setImported={setImported} />}
@@ -356,26 +340,16 @@ const TickStamp = () => (
   </span>
 );
 
-const SIGN_IN_COUNTDOWN = 3;
-function AccountStep({ email, signingIn, next, fresh }: { email: string | null; signingIn: boolean; next: () => void; fresh: boolean }) {
+function AccountStep({ email, signingIn, next, close }: { email: string | null; signingIn: boolean; next: () => void; close: () => void }) {
   const signIn = useCloudroomSignIn();
   const busy = signingIn || signIn.isPending;
-  const [group, setGroup] = useAtom(signInGroupAtom);
-  const start = (detail: SetupDetail | null = null) => { track("account", "started", detail); signIn.mutate("signIn"); };
-  const begin = () => { setGroup("auto_done"); if (!busy && !email) start("auto"); };
-  const [left, setLeft] = useCountdown(true, begin);
-  const openNow = () => { setLeft(null); begin(); };
-  const cancel = () => { setLeft(null); setGroup("auto_done"); };
-  // Only the desktop app on a new install, and only once: Cancel or a finished countdown never auto-opens again.
-  const offered = fresh && !email && getBbDesktopInfo() !== null;
-  useEffect(() => {
-    if (!offered || busy) return;
-    if (group === null) setGroup(Math.random() < 0.2 ? "manual" : "auto");
-    else if (group === "auto" && left === null) setLeft(SIGN_IN_COUNTDOWN);
-  }, [offered, busy, group, left, setGroup, setLeft]);
+  // Never open a browser from a timer, effect, old experiment assignment, or
+  // account-status change. Hosted sign-in requires this explicit button click.
+  const start = () => { track("account", "started", "manual"); signIn.mutate("signIn"); };
   return (
     <>
-      <Heading lead="Sign in to" mark="Cloudroom" />
+      <Heading lead="Optional" mark="Cloudroom account" />
+      <p className="mt-3 text-base text-(--ob-muted)">Local Veris does not need a Cloudroom account. Sign in only to use Cloudroom-hosted services and its phone relay. Model providers keep their own authentication.</p>
       {email ? (
         <div className="mt-8 flex items-center gap-5">
           <Cta onClick={next}>Continue <Icon name="ArrowRight" aria-hidden /></Cta>
@@ -386,27 +360,15 @@ function AccountStep({ email, signingIn, next, fresh }: { email: string | null; 
           <Cta disabled className="w-full"><Icon name="Loading" className="animate-spin" aria-hidden />Waiting for your browser…</Cta>
           <Note>Finish logging in in your browser. <button type="button" className={LINK} onClick={() => signIn.mutate("cancel")}>Cancel</button></Note>
         </div>
-      ) : left !== null ? (
-        <>
-          <p className="mt-3 text-base text-(--ob-muted)">Use the account you made on cloudroom.dev.</p>
-          <div className="mt-8 flex items-center gap-5">
-            <Cta onClick={openNow}>Opening your browser in {left}…</Cta>
-            <Note>
-              <button type="button" className={LINK} onClick={openNow}>Open now</button> · <button type="button" className={LINK} onClick={cancel}>Cancel</button>
-            </Note>
-          </div>
-          <CountdownBar seconds={SIGN_IN_COUNTDOWN} />
-          <p className="mt-6 text-sm text-(--ob-muted)">Already signed in on cloudroom.dev? You come right back.</p>
-        </>
       ) : (
-        <>
-          <p className="mt-3 text-base text-(--ob-muted)">Use the account you made on cloudroom.dev.</p>
-          <div className="mt-8 flex flex-col items-start gap-4">
-            <Cta onClick={() => start()}>Sign in with browser <Icon name="ArrowRight" aria-hidden /></Cta>
-            <Note>Already signed in there? You come right back.</Note>
-          </div>
-        </>
+        <div className="mt-8 flex flex-col items-start gap-4">
+          <Cta onClick={start}>Connect Cloudroom account <Icon name="ArrowRight" aria-hidden /></Cta>
+          <Note>This does not replace or create your model-provider logins.</Note>
+        </div>
       )}
+      <div className="mt-6">
+        <Outline onClick={close}>Use Veris locally</Outline>
+      </div>
     </>
   );
 }
